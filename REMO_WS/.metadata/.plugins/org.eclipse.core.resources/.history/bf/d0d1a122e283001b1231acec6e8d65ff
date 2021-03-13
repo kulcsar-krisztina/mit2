@@ -1,0 +1,194 @@
+package hu.bme.mit.yakindu.analysis.workhere;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
+import org.junit.Test;
+import org.yakindu.sct.model.sgraph.State;
+import org.yakindu.sct.model.sgraph.Statechart;
+import org.yakindu.sct.model.sgraph.Transition;
+import org.yakindu.sct.model.stext.stext.EventDefinition;
+import org.yakindu.sct.model.stext.stext.VariableDefinition;
+
+import hu.bme.mit.model2gml.Model2GML;
+import hu.bme.mit.yakindu.analysis.modelmanager.ModelManager;
+
+public class Main {
+	@Test
+	public void test() {
+		main(new String[0]);
+	}
+	
+	public static void main(String[] args) {
+		
+		ModelManager manager = new ModelManager();
+		Model2GML model2gml = new Model2GML();
+		
+		// Loading model
+		EObject root = manager.loadModel("model_input/example.sct");
+		
+		// Reading model
+		Statechart s = (Statechart) root;
+		TreeIterator<EObject> iterator = s.eAllContents();
+		
+		List<EventDefinition> events = new ArrayList();
+		List<VariableDefinition> variables = new ArrayList();
+		
+		int id  = 1;
+		
+		while (iterator.hasNext()) {
+			EObject content = iterator.next();
+			if(content instanceof State) {
+				State state = (State) content;
+				
+				if (state.getName() == "") {
+					state.setName(""+ id);
+					System.out.println("Uj nev: " + state.getName() + "\n");
+					id++;
+				}
+				
+				System.out.println(state.getName() + "\n");
+				
+				if (state.getOutgoingTransitions().size() == 0) {
+					System.out.println("Csapda: " + state.getName() + "\n");
+				}
+				
+				for (Transition t : state.getOutgoingTransitions()) {
+					State newstate = (State) t.getTarget();
+					System.out.println(state.getName() + "->" + newstate.getName() + "\n");
+				}
+			}
+			
+			if (content instanceof EventDefinition) {
+				EventDefinition state = (EventDefinition) content;
+				System.out.println("Event:" + state.getName() + "\n");
+				events.add(state);
+			}
+			
+			if (content instanceof VariableDefinition) {
+				VariableDefinition state = (VariableDefinition) content;
+				System.out.println("Variable: " + state.getName() + "\n");
+				variables.add(state);
+			}
+			
+		}
+		
+		System.out.println("public static void print(IExampleStatemachine s) {");
+		
+		for (int i = 0; i < variables.size(); i++) {
+			String var = variables.get(i).getName();
+			char ch = var.charAt(0);
+			ch = Character.toUpperCase(ch);
+			String string = ch + var.substring(1);
+			System.out.println("System.out.println(\"" + ch + " = \" + s.getSCInterface().get" + string + "());");
+		}
+		
+		
+		System.out.println("} \n");
+		// Transforming the model into a graph representation
+		String content = model2gml.transform(root);
+		// and saving it
+		manager.saveFile("model_output/graph.gml", content);
+		
+		System.out.println("package hu.bme.mit.yakindu.analysis.workhere;\n" + 
+				"\n" + 
+				"import java.util.ArrayList;\n" + 
+				"import java.util.List;\n" + 
+				"import java.util.Scanner;\n" + 
+				"\n" + 
+				"import org.eclipse.emf.common.util.TreeIterator;\n" + 
+				"import org.eclipse.emf.ecore.EObject;\n" + 
+				"import org.junit.Test;\n" + 
+				"import org.yakindu.sct.model.sgraph.State;\n" + 
+				"import org.yakindu.sct.model.sgraph.Statechart;\n" + 
+				"import org.yakindu.sct.model.sgraph.Transition;\n" + 
+				"import org.yakindu.sct.model.stext.stext.EventDefinition;\n" + 
+				"import org.yakindu.sct.model.stext.stext.VariableDefinition;\n" + 
+				"\n" + 
+				"import hu.bme.mit.model2gml.Model2GML;\n" + 
+				"import hu.bme.mit.yakindu.analysis.modelmanager.ModelManager;\n" + 
+				"\n" + 
+				"public class Main {\n" + 
+				"	@Test\n" + 
+				"	public void test() {\n" + 
+				"		main(new String[0]);\n" + 
+				"	}\n" + 
+				"	\n" + 
+				"	public static void main(String[] args) {\n" + 
+				"		\n" + 
+				"		ModelManager manager = new ModelManager();\n" + 
+				"		Model2GML model2gml = new Model2GML();\n" + 
+				"		\n" + 
+				"		// Loading model\n" + 
+				"		EObject root = manager.loadModel(\"model_input/example.sct\");\n" + 
+				"		\n" + 
+				"		// Reading model\n" + 
+				"		Statechart s = (Statechart) root;\n" + 
+				"		TreeIterator<EObject> iterator = s.eAllContents();\n" + 
+				"		\n" + 
+				"		List<EventDefinition> events = new ArrayList();\n" + 
+				"		List<VariableDefinition> variables = new ArrayList();\n" + 
+				"		\n" + 
+				"		int id  = 1;\n" + 
+				"		\n" + 
+				"		while (iterator.hasNext()) {\n" + 
+				"			EObject content = iterator.next();\n" + 
+				"			if(content instanceof State) {\n" + 
+				"				State state = (State) content;\n" + 
+				"				\n" + 
+				"				if (state.getName() == \"\") {\n" + 
+				"					state.setName(\"\"+ id);\n" + 
+				"					System.out.println(\"Uj nev: \" + state.getName() + \"\\n\");\n" + 
+				"					id++;\n" + 
+				"				}\n" + 
+				"				\n" + 
+				"				System.out.println(state.getName() + \"\\n\");\n" + 
+				"				\n" + 
+				"				if (state.getOutgoingTransitions().size() == 0) {\n" + 
+				"					System.out.println(\"Csapda: \" + state.getName() + \"\\n\");\n" + 
+				"				}\n" + 
+				"				\n" + 
+				"				for (Transition t : state.getOutgoingTransitions()) {\n" + 
+				"					State newstate = (State) t.getTarget();\n" + 
+				"					System.out.println(state.getName() + \"->\" + newstate.getName() + \"\\n\");\n" + 
+				"				}\n" + 
+				"			}\n" + 
+				"			\n" + 
+				"			if (content instanceof EventDefinition) {\n" + 
+				"				EventDefinition state = (EventDefinition) content;\n" + 
+				"				System.out.println(\"Event:\" + state.getName() + \"\\n\");\n" + 
+				"				events.add(state);\n" + 
+				"			}\n" + 
+				"			\n" + 
+				"			if (content instanceof VariableDefinition) {\n" + 
+				"				VariableDefinition state = (VariableDefinition) content;\n" + 
+				"				System.out.println(\"Variable: \" + state.getName() + \"\\n\");\n" + 
+				"				variables.add(state);\n" + 
+				"			}\n" + 
+				"			\n" + 
+				"		}\n" + 
+				"		\n" + 
+				"		System.out.println(\"public static void print(IExampleStatemachine s) {\");\n" + 
+				"		\n" + 
+				"		for (int i = 0; i < variables.size(); i++) {\n" + 
+				"			String var = variables.get(i).getName();\n" + 
+				"			char ch = var.charAt(0);\n" + 
+				"			ch = Character.toUpperCase(ch);\n" + 
+				"			String string = ch + var.substring(1);\n" + 
+				"			System.out.println(\"System.out.println(\\\"\" + ch + \" = \\\" + s.getSCInterface().get\" + string + \"());\");\n" + 
+				"		}\n" + 
+				"		\n" + 
+				"       	\n" + 
+				"		\n" + 
+				"		System.out.println(\"} \\n\");\n" + 
+				"		// Transforming the model into a graph representation\n" + 
+				"		String content = model2gml.transform(root);\n" + 
+				"		// and saving it\n" + 
+				"		manager.saveFile(\"model_output/graph.gml\", content);\n" + 
+				"	}\n" + 
+				"}");
+	}
+}

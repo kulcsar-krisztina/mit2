@@ -24,6 +24,12 @@ public class ExampleStatemachine implements IExampleStatemachine {
 			black = true;
 		}
 		
+		private boolean blackStart;
+		
+		public void raiseBlackStart() {
+			blackStart = true;
+		}
+		
 		private long whiteTime;
 		
 		public long getWhiteTime() {
@@ -44,10 +50,21 @@ public class ExampleStatemachine implements IExampleStatemachine {
 			this.blackTime = value;
 		}
 		
+		private long blackStarted;
+		
+		public long getBlackStarted() {
+			return blackStarted;
+		}
+		
+		public void setBlackStarted(long value) {
+			this.blackStarted = value;
+		}
+		
 		protected void clearEvents() {
 			start = false;
 			white = false;
 			black = false;
+			blackStart = false;
 		}
 	}
 	
@@ -87,6 +104,8 @@ public class ExampleStatemachine implements IExampleStatemachine {
 		sCInterface.setWhiteTime(60);
 		
 		sCInterface.setBlackTime(60);
+		
+		sCInterface.setBlackStarted(0);
 	}
 	
 	public void enter() {
@@ -215,6 +234,10 @@ public class ExampleStatemachine implements IExampleStatemachine {
 		sCInterface.raiseBlack();
 	}
 	
+	public void raiseBlackStart() {
+		sCInterface.raiseBlackStart();
+	}
+	
 	public long getWhiteTime() {
 		return sCInterface.getWhiteTime();
 	}
@@ -229,6 +252,14 @@ public class ExampleStatemachine implements IExampleStatemachine {
 	
 	public void setBlackTime(long value) {
 		sCInterface.setBlackTime(value);
+	}
+	
+	public long getBlackStarted() {
+		return sCInterface.getBlackStarted();
+	}
+	
+	public void setBlackStarted(long value) {
+		sCInterface.setBlackStarted(value);
 	}
 	
 	/* Entry action for state 'Black'. */
@@ -333,7 +364,14 @@ public class ExampleStatemachine implements IExampleStatemachine {
 					exitSequence_main_region_Init();
 					enterSequence_main_region_White_default();
 				} else {
-					did_transition = false;
+					if (sCInterface.blackStart) {
+						exitSequence_main_region_Init();
+						sCInterface.setBlackStarted(1);
+						
+						enterSequence_main_region_Black_default();
+					} else {
+						did_transition = false;
+					}
 				}
 			}
 		}
